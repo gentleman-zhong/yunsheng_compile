@@ -1,0 +1,10 @@
+Metadata-Version: 1.0
+Name: pypopsift
+Version: 1.0.0
+Summary: Python module for CUDA accelerated GPU SIFT 
+Home-page: UNKNOWN
+Author: Piero Toffanin
+Author-email: pt@uav4geo.com
+License: UNKNOWN
+Description: UNKNOWN
+Platform: UNKNOWN

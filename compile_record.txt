@@ -1,0 +1,35 @@
+1. pypopsift
+    cmake .. \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=/code/SuperBuild/install \
+    -DOUTPUT_DIR=/code/SuperBuild/install/bin/opensfm/opensfm \
+    -DCUDAToolkit_ROOT=/usr/local/cuda-12.4 \
+    -DPYTHON_EXECUTABLE=$(which python3) \
+    -DFETCHCONTENT_SOURCE_DIR_POPSIFT=/code/SuperBuild/install/bin/pypopsift/popsift-src
+    make -j$(nproc)
+    make install
+
+2. ceres-solver 2.3.0
+    # 需要cuda-toolkit > 12; 需要cudss才能全量加速；注意编译的计算架构
+    cmake /code/SuperBuild/src/ceres/    \     
+    -DCMAKE_BUILD_TYPE=Release  \
+    -DCMAKE_INSTALL_PREFIX="/code/SuperBuild/install"   \   
+    -DUSE_CUDA=ON     \
+    -DBUILD_SHARED_LIBS=ON      \
+    -DMINIGLOG=ON      \
+    -DSUITESPARSE=ON
+
+    make -j$(nproc)
+    make install
+
+3. opensfm
+    cmake .. \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCERES_ROOT_DIR=/code/SuperBuild/install \
+    -DOpenCV_DIR=/code/SuperBuild/install/lib/cmake/opencv4 \
+    -DADDITIONAL_INCLUDE_DIRS=/code/SuperBuild/install/include \
+    -DOPENSFM_BUILD_TESTS=OFF \
+    -DPYTHON_EXECUTABLE="$(which python3)"
+    
+    make -j$(nproc)
+

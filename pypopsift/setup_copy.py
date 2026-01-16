@@ -1,0 +1,84 @@
+import os
+import re
+import sys
+import platform
+import subprocess
+import shutil
+
+from setuptools import setup, Extension
+from setuptools.command.build_ext import build_ext
+from setuptools.command.install_lib import install_lib
+from distutils.version import LooseVersion
+
+PACKAGE_NAME = 'pypopsift'
+
+class CMakeExtension(Extension):
+    def __init__(self, name, sourcedir=''):
+        Extension.__init__(self, name, sources=[])
+        self.sourcedir = os.path.abspath(sourcedir)
+
+
+class CMakeBuild(build_ext):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # 指定你想用的 cmake 路径
+        self.cmake_executable = '/home/zhangzhong/miniconda3/bin/cmake'
+
+    def run(self):
+        try:
+            out = subprocess.check_output([self.cmake_executable, '--version'])
+        except OSError:
+            raise RuntimeError("CMake must be installed to build the following extensions: " +
+                               ", ".join(e.name for e in self.extensions))
+
+        if platform.system() == "Windows":
+            cmake_version = LooseVersion(re.search(r'version\s*([\d.]+)', out.decode()).group(1))
+            if cmake_version < '3.1.0':
+                raise RuntimeError("CMake >= 3.1.0 is required on Windows")
+
+        for ext in self.extensions:
+            self.build_extension(ext)
+
+    def build_extension(self, ext):
+        extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
+        if not extdir.endswith(os.path.sep):
+            extdir += os.path.sep
+
+        cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
+                      '-DPYTHON_EXECUTABLE=' + sys.executable]
+
+        cfg = 'Debug' if self.debug else 'Release'
+        build_args = ['--config', cfg]
+
+        self.distribution.bin_dir = extdir
+
+        if platform.system() == "Windows":
+            cmake_args += ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{}={}'.format(cfg.upper(), extdir)]
+            if sys.maxsize > 2**32:
+                cmake_args += ['-A', 'x64']
+            build_args += ['--', '/m']
+        else:
+            cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
+            build_args += ['--', '-j4']
+
+        env = os.environ.copy()
+        env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\"'.format(env.get('CXXFLAGS', ''),
+                                                              self.distribution.get_version())
+        if not os.path.exists(self.build_temp):
+            os.makedirs(self.build_temp)
+        
+        # 使用指定 cmake 路径
+        subprocess.check_call([self.cmake_executable, ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env)
+        subprocess.check_call([self.cmake_executable, '--build', '.'] + build_args, cwd=self.build_temp)
+
+setup(
+    name=PACKAGE_NAME,
+    version='1.0.0',
+    author='Piero Toffanin',
+    author_email='pt@uav4geo.com',
+    description='Python module for CUDA accelerated GPU SIFT ',
+    long_description='',
+    ext_modules=[CMakeExtension(PACKAGE_NAME)],
+    cmdclass=dict(build_ext=CMakeBuild),
+    zip_safe=False,
+)
