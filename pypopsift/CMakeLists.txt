@@ -8,7 +8,7 @@ include(FetchContent)
 set(PopSift_BUILD_EXAMPLES OFF CACHE INTERNAL "")
 FetchContent_Declare(
   popsift
-  GIT_REPOSITORY https://github.com/alicevision/popsift
+  GIT_REPOSITORY https://ghfast.top/https://github.com/alicevision/popsift
   GIT_TAG        a19d394d280593f4f8a0692fa12f9a3e837a3df3
 )
 set(FETCHCONTENT_QUIET OFF)

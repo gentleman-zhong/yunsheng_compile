@@ -24,6 +24,7 @@
 
 3. opensfm
     cmake .. \
+    -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
     -DCMAKE_BUILD_TYPE=Release \
     -DCERES_ROOT_DIR=/code/SuperBuild/install \
     -DOpenCV_DIR=/code/SuperBuild/install/lib/cmake/opencv4 \
