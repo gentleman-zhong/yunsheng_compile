@@ -1073,7 +1073,7 @@ void BundleAdjuster::Run() {
   }
   if (linear_solver_type_.find("SPARSE") != std::string::npos || linear_solver_type_ == "CGNR") {
     
-    if (problem.NumResidualBlocks() > 100000) {
+    if (problem.NumResidualBlocks() > 500000) {
         options.sparse_linear_algebra_library_type = ceres::CUDA_SPARSE;
         options.use_mixed_precision_solves = true;        
         
