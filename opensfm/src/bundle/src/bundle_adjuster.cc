@@ -11,6 +11,8 @@
 #include <stdexcept>
 #include <string>
 
+#include <cuda_runtime.h>
+
 #include "bundle/data/bias.h"
 
 namespace {
@@ -1071,13 +1073,28 @@ void BundleAdjuster::Run() {
     throw std::runtime_error("Linear solver type " + linear_solver_type_ +
                              " doesn't exist.");
   }
-  if (linear_solver_type_.find("SPARSE") != std::string::npos || linear_solver_type_ == "CGNR") {
+  if (options.linear_solver_type == ceres::SPARSE_NORMAL_CHOLESKY ||
+      options.linear_solver_type == ceres::SPARSE_SCHUR ||
+      options.linear_solver_type == ceres::CGNR) {
     
     if (problem.NumResidualBlocks() > 500000) {
+        // 设置使用最后一张显卡
+        int device_count;
+        cudaGetDeviceCount(&device_count);
+        if (device_count > 0) {
+            cudaSetDevice(device_count - 1);
+            std::cout << "Using GPU device: " << device_count - 1
+                      << " (last GPU, total: " << device_count << ")"
+                      << std::endl;
+        } else {
+            std::cout << "Warning: No CUDA devices available, falling back to CPU."
+                      << std::endl;
+        }
+
         options.sparse_linear_algebra_library_type = ceres::CUDA_SPARSE;
-        options.use_mixed_precision_solves = true;        
-        
-        std::cout << "Scale large enough (" << problem.NumResidualBlocks() 
+        options.use_mixed_precision_solves = false;
+
+        std::cout << "Scale large enough (" << problem.NumResidualBlocks()
                   << " residuals). GPU Enabled." << std::endl;
     }
   }
