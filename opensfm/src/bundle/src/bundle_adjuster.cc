@@ -370,6 +370,10 @@ void BundleAdjuster::SetUseAnalyticDerivatives(bool use) {
   use_analytic_ = use;
 }
 
+void BundleAdjuster::SetUseGpu(bool use) {
+  use_gpu_ = use;
+}
+
 void BundleAdjuster::SetLinearSolverType(std::string t) {
   linear_solver_type_ = t;
 }
@@ -1076,8 +1080,8 @@ void BundleAdjuster::Run() {
   if (options.linear_solver_type == ceres::SPARSE_NORMAL_CHOLESKY ||
       options.linear_solver_type == ceres::SPARSE_SCHUR ||
       options.linear_solver_type == ceres::CGNR) {
-    
-    if (problem.NumResidualBlocks() > 500000) {
+
+    if (use_gpu_) {
         // 设置使用最后一张显卡
         int device_count;
         cudaGetDeviceCount(&device_count);
@@ -1094,8 +1098,7 @@ void BundleAdjuster::Run() {
         options.sparse_linear_algebra_library_type = ceres::CUDA_SPARSE;
         options.use_mixed_precision_solves = false;
 
-        std::cout << "Scale large enough (" << problem.NumResidualBlocks()
-                  << " residuals). GPU Enabled." << std::endl;
+        std::cout << "GPU Enabled." << std::endl;
     }
   }
   options.num_threads = num_threads_;
