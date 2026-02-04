@@ -246,6 +246,7 @@ class BundleAdjuster {
   void SetMaxNumIterations(int miter);
   void SetNumThreads(int n);
   void SetUseAnalyticDerivatives(bool use);
+  void SetUseGpu(bool use);
   void SetLinearSolverType(std::string t);
   void SetCovarianceAlgorithmType(std::string t);
 
@@ -297,6 +298,7 @@ class BundleAdjuster {
   std::map<std::string, RigInstance> rig_instances_;
 
   bool use_analytic_{false};
+  bool use_gpu_{false};
 
   // minimization constraints
 
